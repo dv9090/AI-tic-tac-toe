@@ -1,5 +1,6 @@
 import pygame
 import sys
+import math
 
 # --- Setup ---
 pygame.init()
@@ -23,18 +24,16 @@ CROSS_COLOR = (84, 84, 84)
 
 # Init display
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
-pygame.display.set_caption("Tic Tac Toe")
+pygame.display.set_caption("Tic Tac Toe AI")
 screen.fill(BG_COLOR)
 
-# Board state: 0 = empty, 1 = player X, 2 = player O
+# Board state: 0 = empty, 1 = player X, 2 = AI O
 board = [[0]*BOARD_COLS for _ in range(BOARD_ROWS)]
 
-# --- Functions ---
+# --- Drawing Functions ---
 def draw_lines():
-    # Horizontal
     for row in range(1, BOARD_ROWS):
         pygame.draw.line(screen, LINE_COLOR, (0, row * SQUARE_SIZE), (WIDTH, row * SQUARE_SIZE), LINE_WIDTH)
-    # Vertical
     for col in range(1, BOARD_COLS):
         pygame.draw.line(screen, LINE_COLOR, (col * SQUARE_SIZE, 0), (col * SQUARE_SIZE, HEIGHT), LINE_WIDTH)
 
@@ -46,15 +45,14 @@ def draw_figures():
                 start_desc = (col * SQUARE_SIZE + SPACE, row * SQUARE_SIZE + SPACE)
                 end_desc = (col * SQUARE_SIZE + SQUARE_SIZE - SPACE, row * SQUARE_SIZE + SQUARE_SIZE - SPACE)
                 pygame.draw.line(screen, CROSS_COLOR, start_desc, end_desc, CROSS_WIDTH)
-                
                 start_asc = (col * SQUARE_SIZE + SPACE, row * SQUARE_SIZE + SQUARE_SIZE - SPACE)
                 end_asc = (col * SQUARE_SIZE + SQUARE_SIZE - SPACE, row * SQUARE_SIZE + SPACE)
                 pygame.draw.line(screen, CROSS_COLOR, start_asc, end_asc, CROSS_WIDTH)
             elif board[row][col] == 2:
-                # Draw O
                 center = (col * SQUARE_SIZE + SQUARE_SIZE // 2, row * SQUARE_SIZE + SQUARE_SIZE // 2)
                 pygame.draw.circle(screen, CIRCLE_COLOR, center, CIRCLE_RADIUS, CIRCLE_WIDTH)
 
+# --- Game Logic ---
 def mark_square(row, col, player):
     board[row][col] = player
 
@@ -87,9 +85,57 @@ def restart():
         for col in range(BOARD_COLS):
             board[row][col] = 0
 
-# --- Main Loop ---
+# --- Minimax AI ---
+def minimax(state, depth, is_maximizing):
+    if check_win(2):  # AI wins
+        return 1
+    if check_win(1):  # Human wins
+        return -1
+    if is_board_full():
+        return 0
+
+    # is_maximizing will alway be true
+    if is_maximizing:
+        best_score = -math.inf
+        for row in range(BOARD_ROWS):
+            for col in range(BOARD_COLS):
+                if state[row][col] == 0:
+                    state[row][col] = 2
+                    score = minimax(state, depth + 1, False)
+                    state[row][col] = 0
+                    best_score = max(score, best_score)
+        return best_score
+    else:
+        best_score = math.inf
+        for row in range(BOARD_ROWS):
+            for col in range(BOARD_COLS):
+                if state[row][col] == 0:
+                    state[row][col] = 1
+                    score = minimax(state, depth + 1, True)
+                    state[row][col] = 0
+                    best_score = min(score, best_score)
+        return best_score
+
+def ai_move():
+    best_score = -math.inf
+    move = None
+    for row in range(BOARD_ROWS):
+        for col in range(BOARD_COLS):
+            if board[row][col] == 0:
+
+                # test if this move is the best by having the biggest score after testing minimax
+                board[row][col] = 2
+                score = minimax(board, 0, False)
+                board[row][col] = 0
+                if score > best_score:
+                    best_score = score
+                    move = (row, col)
+    if move:
+        mark_square(move[0], move[1], 2)
+
+# --- Game Loop ---
 draw_lines()
-player = 1  # X starts
+player = 1
 game_over = False
 
 while True:
@@ -106,16 +152,21 @@ while True:
             clicked_col = mouseX // SQUARE_SIZE
 
             if available_square(clicked_row, clicked_col):
-                mark_square(clicked_row, clicked_col, player)
-                if check_win(player):
-                    game_over = True
-                player = 2 if player == 1 else 1
+                mark_square(clicked_row, clicked_col, 1)
                 draw_figures()
+                if check_win(1):
+                    game_over = True
+                else:
+                    if not is_board_full():
+                        ai_move()
+                        draw_figures()
+                        if check_win(2):
+                            game_over = True
 
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_r:
                 restart()
-                player = 1
                 game_over = False
+                player = 1
 
     pygame.display.update()
