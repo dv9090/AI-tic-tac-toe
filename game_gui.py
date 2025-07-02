@@ -7,7 +7,7 @@ import random
 pygame.init()
 
 # Constants
-WIDTH, HEIGHT = 300, 300
+WIDTH, HEIGHT = 600, 600
 LINE_WIDTH = 5
 BOARD_ROWS = 3
 BOARD_COLS = 3
@@ -142,6 +142,7 @@ draw_lines()
 player = random.randint(1,2)
 game_over = False
 
+
 while True:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -158,24 +159,25 @@ while True:
                 clicked_col = mouseX // SQUARE_SIZE
 
                 if available_square(clicked_row, clicked_col):
-                    mark_square(clicked_row, clicked_col, 1)
+                    mark_square(clicked_row, clicked_col, player)
+
+                    print(player)
+                    
                     draw_figures()
                     if check_win(1):
                         game_over = True
-                    else:
-                        if not is_board_full():
-                            ai_move()
-                            draw_figures()
-                            if check_win(2):
-                                game_over = True
+
+            player = 2
 
 
-        else:
+        if player == 2:
             if not is_board_full():
-                            ai_move()
-                            draw_figures()
-                            if check_win(2):
-                                game_over = True
+                ai_move()
+                #draw_figures()
+                if check_win(2):
+                    game_over = True
+
+            player = 1
 
 
         if event.type == pygame.KEYDOWN:
