@@ -85,6 +85,8 @@ def restart():
         for col in range(BOARD_COLS):
             board[row][col] = 0
 
+
+
 # --- Minimax AI ---
 def minimax(state, depth, is_maximizing):
     if check_win(2):  # AI wins
