@@ -1,6 +1,7 @@
 import pygame
 import sys
 import math
+import random
 
 # --- Setup ---
 pygame.init()
@@ -49,6 +50,7 @@ def draw_figures():
                 end_asc = (col * SQUARE_SIZE + SQUARE_SIZE - SPACE, row * SQUARE_SIZE + SPACE)
                 pygame.draw.line(screen, CROSS_COLOR, start_asc, end_asc, CROSS_WIDTH)
             elif board[row][col] == 2:
+                # Draw O
                 center = (col * SQUARE_SIZE + SQUARE_SIZE // 2, row * SQUARE_SIZE + SQUARE_SIZE // 2)
                 pygame.draw.circle(screen, CIRCLE_COLOR, center, CIRCLE_RADIUS, CIRCLE_WIDTH)
 
@@ -137,7 +139,7 @@ def ai_move():
 
 # --- Game Loop ---
 draw_lines()
-player = 1
+player = random.randint(1,2)
 game_over = False
 
 while True:
@@ -145,30 +147,47 @@ while True:
         if event.type == pygame.QUIT:
             pygame.quit()
             sys.exit()
+        
 
-        if event.type == pygame.MOUSEBUTTONDOWN and not game_over:
-            mouseX = event.pos[0]
-            mouseY = event.pos[1]
+        if player == 1:
+            if event.type == pygame.MOUSEBUTTONDOWN and not game_over:
+                mouseX = event.pos[0]
+                mouseY = event.pos[1]
 
-            clicked_row = mouseY // SQUARE_SIZE
-            clicked_col = mouseX // SQUARE_SIZE
+                clicked_row = mouseY // SQUARE_SIZE
+                clicked_col = mouseX // SQUARE_SIZE
 
-            if available_square(clicked_row, clicked_col):
-                mark_square(clicked_row, clicked_col, 1)
-                draw_figures()
-                if check_win(1):
-                    game_over = True
-                else:
-                    if not is_board_full():
-                        ai_move()
-                        draw_figures()
-                        if check_win(2):
-                            game_over = True
+                if available_square(clicked_row, clicked_col):
+                    mark_square(clicked_row, clicked_col, 1)
+                    draw_figures()
+                    if check_win(1):
+                        game_over = True
+                    else:
+                        if not is_board_full():
+                            ai_move()
+                            draw_figures()
+                            if check_win(2):
+                                game_over = True
+
+
+        else:
+            if not is_board_full():
+                            ai_move()
+                            draw_figures()
+                            if check_win(2):
+                                game_over = True
+
 
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_r:
                 restart()
                 game_over = False
-                player = 1
+                player = random.randint(1,2)
 
     pygame.display.update()
+
+
+#don't have to redraw the whole game for every move
+
+
+#random player/ AI move first
