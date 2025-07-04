@@ -3,6 +3,7 @@ import sys
 import math
 import random
 
+
 # --- Setup ---
 pygame.init()
 
@@ -55,6 +56,8 @@ def draw_figures():
                 pygame.draw.circle(screen, CIRCLE_COLOR, center, CIRCLE_RADIUS, CIRCLE_WIDTH)
 
 # --- Game Logic ---
+
+# save the player(number) to draw X or O later with the draw_figure function
 def mark_square(row, col, player):
     board[row][col] = player
 
@@ -142,7 +145,7 @@ draw_lines()
 player = random.randint(1,2)
 game_over = False
 
-
+print(player)
 while True:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -150,34 +153,37 @@ while True:
             sys.exit()
         
 
-        if player == 1:
-            if event.type == pygame.MOUSEBUTTONDOWN and not game_over:
-                mouseX = event.pos[0]
-                mouseY = event.pos[1]
+        # if right click being clicked
+        if event.type == pygame.MOUSEBUTTONDOWN or player == 2:
 
-                clicked_row = mouseY // SQUARE_SIZE
-                clicked_col = mouseX // SQUARE_SIZE
+            if player == 1:
+                # problem: event does not wait for input
+                if not game_over:
+                    mouseX = event.pos[0]
+                    mouseY = event.pos[1]
 
-                if available_square(clicked_row, clicked_col):
-                    mark_square(clicked_row, clicked_col, player)
+                    clicked_row = mouseY // SQUARE_SIZE
+                    clicked_col = mouseX // SQUARE_SIZE
 
-                    print(player)
-                    
+                    if available_square(clicked_row, clicked_col):
+                        mark_square(clicked_row, clicked_col, player)
+
+                        
+                        draw_figures()
+                        if check_win(1):
+                            game_over = True
+
+                        player = 2
+
+
+            if player == 2:
+                if not is_board_full():
+                    ai_move()
                     draw_figures()
-                    if check_win(1):
+                    if check_win(2):
                         game_over = True
 
-            player = 2
-
-
-        if player == 2:
-            if not is_board_full():
-                ai_move()
-                #draw_figures()
-                if check_win(2):
-                    game_over = True
-
-            player = 1
+                player = 1
 
 
         if event.type == pygame.KEYDOWN:
